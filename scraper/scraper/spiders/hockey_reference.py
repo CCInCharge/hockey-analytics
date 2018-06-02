@@ -3,15 +3,15 @@ import scrapy
 from datetime import datetime
 
 class HockeyReferenceSpider(scrapy.Spider):
-    name = 'hockey_reference'
+    name = 'hockey_reference_year_summary'
     download_delay = 3
 
     def start_requests(self):
+        # TODO: docstring for this method
+        # need to add attribute -a and start year and end year
+
         # For the URLs to scrape, 2018 denotes the 2017-2018 season
         # This is required to ensure that cur_year represents the latest season
-        base_url = 'https://www.hockey-reference.com/leagues/NHL_'
-        suffix_url = '_games.html'
-
         cur_month = datetime.now().month
         if cur_month >= 8:
             cur_year = datetime.now().year + 1
@@ -25,7 +25,9 @@ class HockeyReferenceSpider(scrapy.Spider):
         elif start_year < 2000:
             raise ValueError('end_year must be 2000 or later')
         
-        start_urls = [base_url + str(year) + suffix_url for year in
+        start_urls = ['https://www.hockey-reference.com/leagues/NHL_' + 
+            str(year) + 
+            '_games.html' for year in
             range(start_year, end_year + 1)]
 
         for url in start_urls:
@@ -42,6 +44,8 @@ class HockeyReferenceSpider(scrapy.Spider):
         """
         # TODO: Turn strs to int and return dict
         date_string = row.css('th a::text').extract_first()
+        game_link = 'https://www.hockey-reference.com' + \
+            row.css('th a::attr(href)').extract_first()
         visitor_team = row.css('td[data-stat="visitor_team_name"] a::text')\
             .extract_first()
         visitor_goals = row.css('td[data-stat="visitor_goals"]::text')\
