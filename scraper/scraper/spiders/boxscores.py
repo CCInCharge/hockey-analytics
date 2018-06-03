@@ -43,35 +43,44 @@ class BoxscoresSpider(scrapy.Spider):
     def __get_goal_data(self, row, row_ind, score_indices):
         goal_period = ""
         row_text = row.css("td::text").extract()
-        if score_indices.get("SO", None) and row_ind > score_indices["SO"]:
-            goal_period = "SO"
-        elif score_indices.get("OT", None) and row_ind > score_indices["OT"]:
-            goal_period = str(score_indices["OT_periods"]) + "OT"
-        elif score_indices.get("3rd", None) and row_ind > score_indices["3rd"]:
-            goal_period = "3rd"
-        elif score_indices.get("2nd", None) and row_ind > score_indices["2nd"]:
-            goal_period = "2nd"
-        elif score_indices.get("1st", None) and row_ind > score_indices["1st"]:
+        if "1st" in score_indices and row_ind > score_indices["1st"]:
             goal_period = "1st"
-        if goal_period is not "SO":
-            raw_time_text = row_text[0]
-            time_minutes = int(raw_time_text[0:2])
-            time_seconds = int(raw_time_text[3:5])
-            team_abrv = row.css("td")[1].css("a::text")[0].extract()
-            if "OT" in goal_period:
-                time_minutes += (60 + (score_indices["OT_periods"] - 1) * 20)
-            else:
-                time_minutes += (20 * (int(goal_period[0]) - 1))
-            
-            # Determine if the goal is even strength or special (PP, SH, etc)
-            to_remove = ['\n', '\t', '\xa0', ' ', '-', '—']
-            special = row_text[1]
-            for char in to_remove:
-                special = special.replace(char, '')
-            if 'PP' in special or 'SH' in special or 'EN' in special:
-                specials = special.split('')
-            else:
-                specials = []
+        if "2nd" in score_indices and row_ind > score_indices["2nd"]:
+            goal_period = "2nd"
+        if "3rd" in score_indices and row_ind > score_indices["3rd"]:
+            goal_period = "3rd"
+        if "OT" in score_indices and row_ind > score_indices["OT"]:
+            goal_period = str(score_indices["OT_periods"]) + "OT"
+        if "SO" in score_indices and row_ind > score_indices["SO"]:
+            goal_period = "SO"
+        # Ignore shootout goals
+        if goal_period is "SO":
+            return None
+        
+        raw_time_text = row_text[0]
+        time_minutes = int(raw_time_text[0:2])
+        time_seconds = int(raw_time_text[3:5])
+        team_abrv = row.css("td")[1].css("a::text")[0].extract()
+        if "OT" in goal_period:
+            time_minutes += (60 + (score_indices["OT_periods"] - 1) * 20)
+        else:
+            time_minutes += (20 * (int(goal_period[0]) - 1))
+        
+        # Determine if the goal is even strength or special (PP, SH, EN)
+        to_remove = ['\n', '\t', '\xa0', ' ', '-', '—']
+        special = row_text[1]
+        for char in to_remove:
+            special = special.replace(char, '')
+        if 'PP' in special or 'SH' in special or 'EN' in special:
+            specials = special.split(',')
+        else:
+            specials = []
+
+        goal = {"time_minutes": time_minutes,
+            "time_seconds": time_seconds,
+            "team_abrv": team_abrv,
+            "specials": specials}
+        return goal
 
     def parse(self, response):
         rows = response.css("#scoring tr")
