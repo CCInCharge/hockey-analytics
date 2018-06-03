@@ -42,7 +42,6 @@ class HockeyReferenceSpider(scrapy.Spider):
         :param row: scrapy.Selector representing a row of data
         :returns: dict which contains the teams, date, and final score
         """
-        # TODO: Turn strs to int and return dict
         date_string = row.css('th a::text').extract_first()
         game_link = 'https://www.hockey-reference.com' + \
             row.css('th a::attr(href)').extract_first()
@@ -54,7 +53,12 @@ class HockeyReferenceSpider(scrapy.Spider):
             .extract_first()
         home_goals = row.css('td[data-stat="home_goals"]::text')\
             .extract_first()
-
+        return {"date_string": date_string,
+            "game_link": game_link,
+            "visitor_team": visitor_team,
+            "visitor_goals": int(visitor_goals),
+            "home_team": home_team,
+            "home_goals": int(home_goals)}
 
     def parse(self, response):
         reg_season_table = response.css('#all_games #games tbody tr')
