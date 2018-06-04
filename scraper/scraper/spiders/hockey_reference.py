@@ -65,4 +65,5 @@ class HockeyReferenceSpider(scrapy.Spider):
         playoffs_table = response.css('#all_games_playoffs #games_playoffs '
             'tbody tr')
         
-        # TODO: pull data from the regular season table and the playoffs table
+        # TODO: Save scores to database
+        # TODO: Get URLs and send to other spider
