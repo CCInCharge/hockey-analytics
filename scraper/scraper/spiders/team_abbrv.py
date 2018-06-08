@@ -5,6 +5,11 @@ from datetime import datetime
 class TeamAbbrvSpider(scrapy.Spider):
     name = 'team_abbrv'
     download_delay = 3
+    custom_settings = {
+        'ITEM_PIPELINES': {
+            'scraper.pipelines.TeamAbbrvPipeline': 0,
+        }
+    }
     allowed_domains = ['https://www.hockey-reference.com/leagues/NHL_2000_standings.html']
     start_urls = ['http://https://www.hockey-reference.com/leagues/NHL_2000_standings.html/']
 
@@ -49,4 +54,10 @@ class TeamAbbrvSpider(scrapy.Spider):
     def parse(self, response):
         eastern = response.css("#standings_EAS tbody .full_table th a")
         western = response.css("#standings_WES tbody .full_table th a")
-        # TODO: Run this for every team and output to database
+
+        output = []
+        for row in eastern:
+            output.append(self.__parse_data_from_link(row))
+        for row in western:
+            output.append(self.__parse_data_from_link(row))
+        return output
