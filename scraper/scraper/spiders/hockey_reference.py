@@ -3,8 +3,13 @@ import scrapy
 from datetime import datetime
 
 class HockeyReferenceSpider(scrapy.Spider):
-    name = 'hockey_reference_year_summary'
+    name = 'hockey_reference'
     download_delay = 3
+    custom_settings = {
+        'ITEM_PIPELINES': {
+            'scraper.pipelines.HockeyReferencePipeline': 1,
+        }
+    }
 
     def start_requests(self):
         # TODO: docstring for this method
@@ -44,26 +49,47 @@ class HockeyReferenceSpider(scrapy.Spider):
         """
         date_string = row.css('th a::text').extract_first()
         game_link = 'https://www.hockey-reference.com' + \
-            row.css('th a::attr(href)').extract_first()
+                row.css('th a::attr(href)').extract_first()
         visitor_team = row.css('td[data-stat="visitor_team_name"] a::text')\
-            .extract_first()
+                .extract_first()
         visitor_goals = row.css('td[data-stat="visitor_goals"]::text')\
-            .extract_first()
+                .extract_first()
         home_team = row.css('td[data-stat="home_team_name"] a::text')\
-            .extract_first()
+                .extract_first()
         home_goals = row.css('td[data-stat="home_goals"]::text')\
-            .extract_first()
+                .extract_first()
+        
+        visitor_team_abbrv_str = row.css('td[data-stat="visitor_team_name"] '
+                'a::attr(href)').extract_first()
+        home_team_abbrv_str = row.css('td[data-stat="home_team_name"] '
+                'a::attr(href)').extract_first() 
+        tokenize_visitor = visitor_team_abbrv_str.split("/")
+        tokenize_home = home_team_abbrv_str.split("/")
+        visitor_abbrv = tokenize_visitor[-2]
+        home_abbrv = tokenize_home[-2]
+        visitor_year = int(tokenize_visitor[-1][0:4])
+        home_year = int(tokenize_home[-1][0:4])
+
         return {"date_string": date_string,
-            "game_link": game_link,
-            "visitor_team": visitor_team,
-            "visitor_goals": int(visitor_goals),
-            "home_team": home_team,
-            "home_goals": int(home_goals)}
+                "game_link": game_link,
+                "visitor_team": visitor_team,
+                "visitor_abbrv": visitor_abbrv,
+                "visitor_year": visitor_year,
+                "visitor_goals": int(visitor_goals),
+                "home_team": home_team,
+                "home_abbrv": home_abbrv,
+                "home_year": home_year,
+                "home_goals": int(home_goals)}
 
     def parse(self, response):
         reg_season_table = response.css('#all_games #games tbody tr')
+
+        # TODO: Save playoff record
         playoffs_table = response.css('#all_games_playoffs #games_playoffs '
             'tbody tr')
         
-        # TODO: Save scores to database
-        # TODO: Get URLs and send to other spider
+        output = []
+        for row in reg_season_table:
+            output.append(self.__parse_data_from_row(row))
+        
+        return output

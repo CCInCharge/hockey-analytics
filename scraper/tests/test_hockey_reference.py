@@ -17,8 +17,12 @@ class HockeyReferenceSpiderTest(unittest.TestCase):
         self.assertEqual(game["date_string"], "2016-10-12")
         self.assertIn("201610120CHI.html", game["game_link"])
         self.assertEqual(game["visitor_team"], "St. Louis Blues")
+        self.assertEqual(game["visitor_abbrv"], "STL")
+        self.assertEqual(game["visitor_year"], 2017)
         self.assertEqual(game["visitor_goals"], 5)
         self.assertEqual(game["home_team"], "Chicago Blackhawks")
+        self.assertEqual(game["home_abbrv"], "CHI")
+        self.assertEqual(game["home_year"], 2017)
         self.assertEqual(game["home_goals"], 2)
     
     def test_parse_data_from_row_2(self):
@@ -28,6 +32,10 @@ class HockeyReferenceSpiderTest(unittest.TestCase):
         self.assertEqual(game["date_string"], "2016-10-12")
         self.assertIn("201610120SJS.html", game["game_link"])
         self.assertEqual(game["visitor_team"], "Los Angeles Kings")
+        self.assertEqual(game["visitor_abbrv"], "LAK")
+        self.assertEqual(game["visitor_year"], 2017)
         self.assertEqual(game["visitor_goals"], 1)
         self.assertEqual(game["home_team"], "San Jose Sharks")
+        self.assertEqual(game["home_abbrv"], "SJS")
+        self.assertEqual(game["home_year"], 2017)
         self.assertEqual(game["home_goals"], 2)
