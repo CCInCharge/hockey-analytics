@@ -10,8 +10,6 @@ class TeamAbbrvSpider(scrapy.Spider):
             'scraper.pipelines.TeamAbbrvPipeline': 0,
         }
     }
-    allowed_domains = ['https://www.hockey-reference.com/leagues/NHL_2000_standings.html']
-    start_urls = ['http://https://www.hockey-reference.com/leagues/NHL_2000_standings.html/']
 
     def start_requests(self):
         # need to add attribute -a and start year and end year

@@ -7,11 +7,12 @@
 
 import mysql.connector
 import configparser
+from scraper.settings import PROJECT_ROOT, DB_CONFIG_PATH
 
 class TeamAbbrvPipeline(object):
     def open_spider(self, spider):
         config = configparser.ConfigParser()
-        config.read('config/db_config.cfg')
+        config.read(DB_CONFIG_PATH)
         hostname = config['database']['hostname']
         user = config['database']['user']
         password = config['database']['password']
@@ -26,6 +27,9 @@ class TeamAbbrvPipeline(object):
         self.conn.close()
 
     def process_item(self, item, spider):
-        # TODO: Save to DB
-        
+        self.cur.execute("INSERT IGNORE INTO teams (id, year, name) "
+                "VALUES (%s, %s, %s)",
+                (str(item['year']) + ' ' + item['abbrv'],
+                item['year'], item['name']))
+        self.conn.commit()
         return item
